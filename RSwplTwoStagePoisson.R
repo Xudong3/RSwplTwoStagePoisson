@@ -683,18 +683,18 @@ fast_J_WPL<-function(y,g,x,  pos,  sc, fss, n2infor,N2, theta){
       for(j in js){
          cat(".")
          incrementdaij=wdalpha(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],sigma2=exp(theta[3]),
-                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),  pos[i], pos[j],sc[i], sc[j],n2infor,N2)
+                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),  pos[i], pos[j],sc[i], sc[j],fss, n2infor,N2)
          incrementdbij=wdbeta(y[i],y[j],g[i],g[j],x[i],x[j],alpha=theta[1],beta=theta[2],sigma2=exp(theta[3]),
-                              tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),   pos[i], pos[j],sc[i], sc[j], n2infor,N2)
+                              tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),   pos[i], pos[j],sc[i], sc[j], fss, n2infor,N2)
          incrementdsij=exp(theta[3])*wdsigma2(y[i],y[j],g[i],g[j],x[i],x[j],alpha=theta[1],beta=theta[2],
                                               sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),
-                                              pos[i], pos[j],sc[i], sc[j], n2infor,N2)
+                                              pos[i], pos[j],sc[i], sc[j],fss,  n2infor,N2)
          incrementdt_11ij=exp(theta[4])*wdtau2_11(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],sigma2=exp(theta[3]),
-                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j], n2infor,N2)
+                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j],fss,  n2infor,N2)
          incrementdt_12ij=wdtau_12(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],sigma2=exp(theta[3]),
-                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j], n2infor,N2)
+                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j],fss,  n2infor,N2)
          incrementdt_22ij=exp(theta[6])*wdtau2_22(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],sigma2=exp(theta[3]),
-                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j], n2infor,N2)
+                                               tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),pos[i], pos[j], sc[i], sc[j], fss, n2infor,N2)
          
          wpsij=c(incrementdaij, incrementdbij, incrementdsij, incrementdt_11ij, incrementdt_12ij, incrementdt_22ij)
          
@@ -703,19 +703,19 @@ fast_J_WPL<-function(y,g,x,  pos,  sc, fss, n2infor,N2, theta){
          ii <-rep(i, length(k))
          jj<-rep(j,length(k))
          incrementdakl=wdalpha(y[k],y[l],g[k],g[l],x[k],x[l], alpha=theta[1],beta=theta[2],
-                               sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),  pos[k], pos[l], sc[k], sc[l],n2infor,N2)
+                               sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]),  pos[k], pos[l], sc[k], sc[l],fss, n2infor,N2)
          incrementdbkl=wdbeta(y[k],y[l],g[k],g[l],x[k],x[l],alpha=theta[1],beta=theta[2],
-                              sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l], n2infor,N2)
+                              sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l],fss,  n2infor,N2)
          incrementdskl=exp(theta[3])*wdsigma2(y[k],y[l],g[k],g[l],x[k],x[l],alpha=theta[1],beta=theta[2],
-                                              sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k],pos[l],sc[k], sc[l], n2infor,N2)
+                                              sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k],pos[l],sc[k], sc[l],fss,  n2infor,N2)
          incrementdt_11kl=exp(theta[4])*wdtau2_11(y[k],y[l],g[k],g[l],x[k],x[l], alpha=theta[1],beta=theta[2],
-                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l], n2infor,N2)
+                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l],fss,  n2infor,N2)
          incrementdt_12kl=wdtau_12(y[k],y[l],g[k],g[l],x[k],x[l], alpha=theta[1],beta=theta[2],
-                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l], n2infor,N2)
+                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l],fss,  n2infor,N2)
          incrementdt_22kl=exp(theta[6])*wdtau2_22(y[k],y[l],g[k],g[l],x[k],x[l], alpha=theta[1],beta=theta[2],
-                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l], n2infor,N2)
+                                                  sigma2=exp(theta[3]), tau2_11=exp(theta[4]), tau_12=theta[5],  tau2_22=exp(theta[6]), pos[k], pos[l], sc[k], sc[l], fss, n2infor,N2)
          wpskl=cbind(incrementdakl, incrementdbkl, incrementdskl, incrementdt_11kl, incrementdt_12kl, incrementdt_22kl)
-         sumwpskl<-colSums( (1/FouOrdPi( pos[ii], pos[jj], pos[k], pos[l], sc[ii], sc[jj], sc[k], sc[l], n2infor,N2))*FouOrdDel(pos[ii], pos[jj], pos[k], pos[l], sc[ii], sc[jj], sc[k], sc[l], n2infor,N2)* wpskl)
+         sumwpskl<-colSums( (1/FouOrdPi( pos[ii], pos[jj], pos[k], pos[l], sc[ii], sc[jj], sc[k], sc[l],fss,  n2infor,N2))*FouOrdDel(pos[ii], pos[jj], pos[k], pos[l], sc[ii], sc[jj], sc[k], sc[l],fss,  n2infor,N2)* wpskl)
          wpsijkl<-tcrossprod(wpsij,sumwpskl)
          sum=sum+wpsijkl
       }
@@ -728,11 +728,11 @@ estJ_WPL=fast_J_WPL(y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,
                     x=TwostagePoissonSample$x, pos=TwostagePoissonSample$ID_unit,  sc=TwostagePoissonSample$PSU, fss=pi1, 
                     n2infor= FirststagePoisson*n2, N2, theta=estimator_WPL[[1]] )
 
-
+estJ_WPL
 # sanwich estimator H^{-1}J (H^{-1})^\T
 ##uninformaitve
 sanestimator_WPL= solve(estH_WPL)%*% estJ_WPL%*% t(solve(estH_WPL))
-
+sanestimator_WPL
 
 ##informative sampling
 wplis=function (theta, y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
@@ -757,7 +757,7 @@ estJis_WPL=fast_J_WPL(y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$clus
 # sanwich estimator H^{-1}J (H^{-1})^\T
 ##informaitve
 sanestimatoris_WPL= solve(estHis_WPL)%*% estJis_WPL%*% t(solve(estHis_WPL))
-
+sanestimatoris_WPL
 
 #simulation
 
