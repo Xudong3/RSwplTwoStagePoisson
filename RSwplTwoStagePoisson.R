@@ -1,7 +1,7 @@
 
 #setting: notation
-N1=30 ## number of sampling cluster in the first stage (population level) 
-N2=30 ##number of elements in each sampling cluster (population level)
+N1=70 ## number of sampling cluster in the first stage (population level) 
+N2=70 ##number of elements in each sampling cluster (population level)
 latitude<-1:N2
 longitude<-1:N1
 population<-expand.grid(lat=latitude,long=longitude)
