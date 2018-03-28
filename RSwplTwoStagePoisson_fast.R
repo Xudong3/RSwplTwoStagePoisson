@@ -33,7 +33,7 @@ table(table(population$PSU))
 truebeta1=1
 truebeta2=3
 truesigma2=2
-truetau2_11=2
+truetau2_11=1
 truetau_12=0.4
 truetau2_22=1
 PairCov<-matrix(c(truetau2_11, truetau_12, truetau_12, truetau2_22), nrow=2, byrow=T)
@@ -510,7 +510,7 @@ pairscore_WPL<-function(y,g,x, theta, pos, sc,fss,  n2infor, N2){
                                            sigma2=exp(theta[3]),tau2_11=exp(theta[4]),tau_12=theta[5], tau2_22=exp(theta[6]))
    wincrementdt_12=wij*dtau_12(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
                                            sigma2=exp(theta[3]),tau2_11=exp(theta[4]),tau_12=theta[5], tau2_22=exp(theta[6]))
-   wincrementdt_22=exp(theta[6])*wdtau2_22(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+   wincrementdt_22=exp(theta[6])*wij*dtau2_22(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
                                            sigma2=exp(theta[3]),tau2_11=exp(theta[4]),tau_12=theta[5], tau2_22=exp(theta[6]))
    c(sum(wincrementda), sum(wincrementdb), sum(wincrementds), sum(wincrementdt_11), sum(wincrementdt_12), 
      sum(wincrementdt_22))/T
@@ -894,6 +894,7 @@ for(i in 1:LOTS){
    rais<-lmer(y~(1|cluster)+x,data=TwostagePoissonSampleis)
    rbis<-fit_PL(TwostagePoissonSampleis$y, TwostagePoissonSampleis$cluster, TwostagePoissonSampleis$x, pars=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
                                  log(truevalue[6])))
+   
    rcis<-fit_WPL(TwostagePoissonSampleis$y, TwostagePoissonSampleis$cluster,TwostagePoissonSampleis$x,
                  TwostagePoissonSampleis$ID_unit, TwostagePoissonSampleis$PSU, fss=pi1is,  n2infor=n2is , N2,  
                  pars=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
@@ -957,7 +958,7 @@ for(i in 1:LOTS){
    #sanwich estimator (uninformative sampling )
    G_PL[, ,i] = tryCatch(solve(H_PL[,,i])%*% J_PL[, , i]%*% t(solve(H_PL[,,i])),   error=function(e) matrix(NaN, 6,6))
    
-   #Pairwise score function PL (uninformative sampling)
+   #Pairwise score function PL (uninformative sampling) 
    PS_PL[i, ]<- pairscore_PL(y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x,
                              theta=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
                                           log(truevalue[6])))
@@ -1013,7 +1014,7 @@ for(i in 1:LOTS){
    G_WPL[, ,i] =  tryCatch(solve(H_WPL[,,i])%*% J_WPL[, , i]%*% t(solve(H_WPL[,,i])),  error=function(e) matrix(NaN, 6,6))
    
    #Pairwise score function WPL (uninformative sampling)
-   PS_WPL[i, ]<- pairscore_WPL(TwostagePoissonSample$y, TwostagePoissonSample$cluster, TwostagePoissonSample$x,
+   PS_WPL[i, ]<- pairscore_WPL(y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster,x= TwostagePoissonSample$x,
                                theta=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
                                        log(truevalue[6])),   TwostagePoissonSample$ID_unit, TwostagePoissonSample$PSU, fss=pi1, n2infor=FirststagePoisson*n2, N2)
    
@@ -1043,9 +1044,10 @@ for(i in 1:LOTS){
    Gis_WPL[,,i]= tryCatch(solve(His_WPL[, , i])%*% Jis_WPL[, , i]%*% t(solve(His_WPL[, , i])),  error=function(e) matrix(NaN, 6,6))
    
    #Pairwise score function WPL (informative sampling)
-   PSis_WPL[i, ]<- pairscore_WPL(TwostagePoissonSampleis$y, TwostagePoissonSampleis$cluster,TwostagePoissonSampleis$x,
+   PSis_WPL[i, ]<- pairscore_WPL(y=TwostagePoissonSampleis$y, g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
                                  theta=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
-                                         log(truevalue[6])),TwostagePoissonSampleis$ID_unit, TwostagePoissonSampleis$PSU, fss=pi1is,  n2infor=n2is , N2)
+                                         log(truevalue[6])),pos=TwostagePoissonSampleis$ID_unit, sc=TwostagePoissonSampleis$PSU, fss=pi1is, 
+                                 n2infor=n2is , N2)
 }	
 
 
@@ -1063,6 +1065,33 @@ abline(h=0)
 #create a table for latex
 #install.packages("xtable")
 library(xtable)
+construct_header <- function(df, grp_names, span, align = "c", draw_line = T) {
+   if (length(align) == 1) align <- rep(align, length(grp_names))
+   if (!all.equal(length(grp_names), length(span), length(align)))
+      stop("grp_names and span have to have the same length!")
+   
+   if (ncol(df) < sum(span)) stop("Span has to be less or equal to the number of columns of df") 
+   
+   header <- mapply(function(s, a, grp) sprintf("\\multicolumn{%i}{%s}{%s}", s, a, grp),
+                    span, align, grp_names)
+   header <- paste(header, collapse = " & ")
+   header <- paste0(header, " \\\\")
+   
+   if (draw_line) {
+      # where do we span the lines:
+      min_vals <- c(1, 1 + cumsum(span)[1:(length(span) - 1)])
+      max_vals <- cumsum(span)
+      line <- ifelse(grp_names == "", "", 
+                     sprintf("\\cmidrule(lr){%i-%i}", min_vals, max_vals))
+      line <- paste(line[line != ""], collapse = " ")
+      
+      header <- paste0(header, "  ", line, "\n  ")
+   }
+   
+   addtorow <- list(pos = list(-1, -1, nrow(df)),
+                    command = c("\\hline\n  ", header, "\\hline\n  "))
+   return(addtorow)
+}
 
 
 #bias and sd for uninformative sampling (NML, PL, WPL)
