@@ -1,7 +1,7 @@
 
 #setting: notation
-N1=100 ## number of sampling cluster in the first stage (population level) 
-N2=100 ##number of elements in each sampling cluster (population level)
+N1=30 ## number of sampling cluster in the first stage (population level) 
+N2=40 ##number of elements in each sampling cluster (population level)
 latitude<-1:N2
 longitude<-1:N1
 population<-expand.grid(lat=latitude,long=longitude)
@@ -533,18 +533,21 @@ library("numDeriv")
 
 #uninformative 
 #Calculate Hessian matrix H for PL (bread for uninformative sampling design)
-pl=function(theta,y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x){
-   n<-length(y)
-   ij=expand.grid(1:n,1:n)
-   ij<-ij[ij[,1]<ij[,2],]
-   ij<-ij[g[ij[,1]]==g[ij[,2]],]
-   i<-ij[,1]
-   j<-ij[,2]
-   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]))
-   sum(increment)/T
-}
-estH_PL=hessian(pl, estimator_PL[[1]])
+#pl=function(theta,y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x){
+#   n<-length(y)
+#   ij=expand.grid(1:n,1:n)
+#   ij<-ij[ij[,1]<ij[,2],]
+#   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+#   i<-ij[,1]
+#   j<-ij[,2]
+#   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+#                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]))
+#   sum(increment)/T
+#}
+#estH_PL=hessian(pl, estimator_PL[[1]])
+
+estH_PL=-jacobian(function(theta){with(TwostagePoissonSample,
+                                         pairscore_PL(y,cluster,x,theta))}, x=estimator_PL[[1]],method="simple")
 
 
 #Calculate  variance matrix J  for PL (meat for uninformative sampling design)
@@ -613,18 +616,22 @@ sanestimator_PL= solve(estH_PL)%*% estJ_PL%*% solve(t(estH_PL))
 
 #Informative
 #Calculate Hessian matrix H for PL (bread for informative sampling design)
-plis=function (theta, y=TwostagePoissonSampleis$y, g=TwostagePoissonSampleis$cluster, x=TwostagePoissonSampleis$x){
-   n<-length(y)
-   ij=expand.grid(1:n,1:n)
-   ij<-ij[ij[,1]<ij[,2],]
-   ij<-ij[g[ij[,1]]==g[ij[,2]],]
-   i<-ij[,1]
-   j<-ij[,2]
-   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]) )
-   sum(increment)/T
-}
-estHis_PL=hessian(plis, estimatoris_PL[[1]])
+#plis=function (theta, y=TwostagePoissonSampleis$y, g=TwostagePoissonSampleis$cluster, x=TwostagePoissonSampleis$x){
+#   n<-length(y)
+#   ij=expand.grid(1:n,1:n)
+#   ij<-ij[ij[,1]<ij[,2],]
+#   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+#   i<-ij[,1]
+#   j<-ij[,2]
+#   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+#                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]) )
+#   sum(increment)/T
+#}
+#estHis_PL=hessian(plis, estimatoris_PL[[1]])
+
+
+estHis_PL=-jacobian(function(theta){with(TwostagePoissonSampleis,
+                                         pairscore_PL(y,cluster,x,theta))}, x=estimatoris_PL[[1]],method="simple")
 
 #Calculate  variance matrix J  for PL (meat for informative sampling design)
 estJis_PL=fast_J_PL(y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,pos=TwostagePoissonSampleis$ID_unit,  
@@ -1051,8 +1058,12 @@ for(i in 1:LOTS){
 }	
 
 
+# install.packages("RColorBrewer")
+library(RColorBrewer)
+color<-c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c" )
+
 #boxplot for uninformative sampling (NML, PL and WPL)
-color=c( rep(c("green", "blue", "red", "yellow"), 4))
+color=c( rep(color, 3))
 name=c("alpha_NML", "beta_NML", "sigma^2_NML", "tau^2_NML", "alpha_PL", "beta_PL", "sigma^2_PL", "tau^2_PL", "alpha_WPL", "beta_WPL", "sigma^2_WPL", "tau^2_WPL" )
 boxplot(cbind(Fit_NML[,c(1:4)],Fit_PL[,c(1:4)], Fit_WPL[,c(1:4)]) ,   col=color)
 abline(h=0)
