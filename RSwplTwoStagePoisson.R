@@ -1,7 +1,7 @@
 
 #setting: notation
-N1=70 ## number of sampling cluster in the first stage (population level) 
-N2=70 ##number of elements in each sampling cluster (population level)
+N1=100 ## number of sampling cluster in the first stage (population level) 
+N2=100 ##number of elements in each sampling cluster (population level)
 latitude<-1:N2
 longitude<-1:N1
 population<-expand.grid(lat=latitude,long=longitude)
@@ -1024,7 +1024,8 @@ for(i in 1:LOTS){
    
    #Pairwise score function WPL (uninformative sampling)
    PS_WPL[i, ]<- pairscore_WPL(TwostagePoissonSample$y, TwostagePoissonSample$cluster, TwostagePoissonSample$x,
-                               theta=estimator_WPL[[1]],   TwostagePoissonSample$ID_unit, TwostagePoissonSample$PSU, fss=pi1, n2infor=FirststagePoisson*n2, N2)
+                               theta=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
+                                       log(truevalue[6])),   TwostagePoissonSample$ID_unit, TwostagePoissonSample$PSU, fss=pi1, n2infor=FirststagePoisson*n2, N2)
    
    #Calculate Hessian matrix H  for WPL (bread for informative sampling design)
    ##informative sampling
@@ -1053,7 +1054,8 @@ for(i in 1:LOTS){
    
    #Pairwise score function WPL (informative sampling)
    PSis_WPL[i, ]<- pairscore_WPL(TwostagePoissonSampleis$y, TwostagePoissonSampleis$cluster,TwostagePoissonSampleis$x,
-                                 theta=estimatoris_WPL[[1]],TwostagePoissonSampleis$ID_unit, TwostagePoissonSampleis$PSU, fss=pi1is,  n2infor=n2is , N2)
+                                 theta=c(truevalue[1:2], log(truevalue[3:4]),  truevalue[5], 
+                                         log(truevalue[6])),TwostagePoissonSampleis$ID_unit, TwostagePoissonSampleis$PSU, fss=pi1is,  n2infor=n2is , N2)
 }	
 
 
