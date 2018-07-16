@@ -645,21 +645,23 @@ sanestimatoris_PL = solve(estHis_PL)%*% estJis_PL%*% t(solve(estHis_PL))
 #define weighted pairwise likelihood WPL 
 
 ##uninformative sampling
-wpl=function (theta, y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,x=TwostagePoissonSample$x,
-              pos=TwostagePoissonSample$ID_unit, sc=TwostagePoissonSample$PSU, fss=pi1, 
-              n2infor=FirststagePoisson*n2 , N2=length(unique(population$lat)) ){
-   n<-length(y)
-   ij=expand.grid(1:n,1:n)
-   ij<-ij[ij[,1]<ij[,2],]
-   ij<-ij[g[ij[,1]]==g[ij[,2]],]
-   i<-ij[,1]
-   j<-ij[,2]
-   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]), pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
-   sum(increment)/T
-}
-estH_WPL=hessian(wpl, estimator_WPL[[1]])
+#wpl=function (theta, y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,x=TwostagePoissonSample$x,
+#              pos=TwostagePoissonSample$ID_unit, sc=TwostagePoissonSample$PSU, fss=pi1, 
+#              n2infor=FirststagePoisson*n2 , N2=length(unique(population$lat)) ){
+#   n<-length(y)
+#   ij=expand.grid(1:n,1:n)
+#   ij<-ij[ij[,1]<ij[,2],]
+#   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+#   i<-ij[,1]
+#   j<-ij[,2]
+#   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+#                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]), pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
+#   sum(increment)/T
+#}
+#estH_WPL=hessian(wpl, estimator_WPL[[1]])
 
+estH_WPL=-jacobian(function(theta){with(TwostagePoissonSample,
+                                         pairscore_PL(y,cluster,x,theta,ID_unit,PSU, pi1, FirststagePoisson*n2, N2))}, x=estimator_WPL[[1]],method="simple")
 
 ##define \hat{J}(\theta) as in page 97 of my thesis and  evaluate at the WPLE
 fast_J_WPL<-function(y,g,x,  pos,  sc, fss, n2infor,N2, theta){
@@ -732,20 +734,24 @@ sanestimator_WPL= solve(estH_WPL)%*% estJ_WPL%*% t(solve(estH_WPL))
 sanestimator_WPL
 
 ##informative sampling
-wplis=function (theta, y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
-                pos=TwostagePoissonSampleis$ID_unit, sc=TwostagePoissonSampleis$PSU, fss=pi1is, 
-                n2infor=n2is , N2=length(unique(population$lat)) ){
-   n<-length(y)
-   ij=expand.grid(1:n,1:n)
-   ij<-ij[ij[,1]<ij[,2],]
-   ij<-ij[g[ij[,1]]==g[ij[,2]],]
-   i<-ij[,1]
-   j<-ij[,2]
-   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]),  tau_12=theta[5], tau2_22=exp(theta[6]),  pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
-   sum(increment)/T
-}
-estHis_WPL=hessian(wplis, estimatoris_WPL[[1]])
+#wplis=function (theta, y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
+#                pos=TwostagePoissonSampleis$ID_unit, sc=TwostagePoissonSampleis$PSU, fss=pi1is, 
+#                n2infor=n2is , N2=length(unique(population$lat)) ){
+#   n<-length(y)
+#   ij=expand.grid(1:n,1:n)
+#   ij<-ij[ij[,1]<ij[,2],]
+#   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+#   i<-ij[,1]
+#   j<-ij[,2]
+#   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+#                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]),  tau_12=theta[5], tau2_22=exp(theta[6]),  pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
+#   sum(increment)/T
+#}
+#estHis_WPL=hessian(wplis, estimatoris_WPL[[1]])
+
+estHis_WPL=-jacobian(function(theta){with(TwostagePoissonSampleis,
+                                       pairscore_WPL(y,cluster,x,theta,ID_unit,PSU, pi1is, n2is, N2))}, x=estimatoris_WPL[[1]],method="simple")
+
 
 
 estJis_WPL=fast_J_WPL(y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,
@@ -834,9 +840,6 @@ for(i in 1:LOTS){
    population$r=with(population, x*(y-truebeta1-truebeta2*x))
    population$ID_unit=with(population, 1:(N1*N2))
    
-   
-   
-   
    ##uninformative Poisson first-stage 
    pi1=runif(N1) ## sampling inclusion probability for sampling cluster
    FirststagePoisson=UPpoisson(pi1)
@@ -853,7 +856,6 @@ for(i in 1:LOTS){
    
    
    #informative two-stage sampling design (first-stage: Poisson, Second-stage:SRSWOR)
-   
    #informative Poisson first-stage sample
    param1=c(0.5, 8)
    pi1informative= function(r, sc,  param, N1){
@@ -944,18 +946,22 @@ for(i in 1:LOTS){
    Fitis_WPL[i,6]<-exp(rcis$par[6])-truevalue[6]
    
    #Calculate Hessian matrix H for PL (bread for uninformative sampling design)
-   pl=function(theta,y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x){
-      n<-length(y)
-      ij=expand.grid(1:n,1:n)
-      ij<-ij[ij[,1]<ij[,2],]
-      ij<-ij[g[ij[,1]]==g[ij[,2]],]
-      i<-ij[,1]
-      j<-ij[,2]
-      increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                   sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]))
-      sum(increment)/T
-   }
-   H_PL[,,i]=hessian(pl, rb[[1]])
+   # pl=function(theta,y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x){
+   #   n<-length(y)
+   #   ij=expand.grid(1:n,1:n)
+   #   ij<-ij[ij[,1]<ij[,2],]
+   #   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+   #   i<-ij[,1]
+   #   j<-ij[,2]
+   #   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+   #                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]))
+   #   sum(increment)/T
+   #}
+   #H_PL[,,i]=hessian(pl, rb[[1]])
+   
+  H_PL[,,i]=-jacobian(function(theta){with(TwostagePoissonSample,
+                                            pairscore_PL(y,cluster,x,theta))}, x=rb[[1]],method="simple")
+   
    
    #Calculate  variance matrix J  for PL (meat for uniformative sampling design)
    J_PL[, , i]=fast_J_PL(y=TwostagePoissonSample$y, g=TwostagePoissonSample$cluster, x=TwostagePoissonSample$x,
@@ -971,18 +977,21 @@ for(i in 1:LOTS){
                                           log(truevalue[6])))
    
    #Calculate Hessian matrix H for PL (bread for informative sampling design)
-   plis=function (theta, y=TwostagePoissonSampleis$y, g=TwostagePoissonSampleis$cluster, x=TwostagePoissonSampleis$x){
-      n<-length(y)
-      ij=expand.grid(1:n,1:n)
-      ij<-ij[ij[,1]<ij[,2],]
-      ij<-ij[g[ij[,1]]==g[ij[,2]],]
-      i<-ij[,1]
-      j<-ij[,2]
-      increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                   sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]) )
-      sum(increment)/T
-   }
-   His_PL[,,i]=hessian(plis, rbis[[1]])
+   #plis=function (theta, y=TwostagePoissonSampleis$y, g=TwostagePoissonSampleis$cluster, x=TwostagePoissonSampleis$x){
+   #   n<-length(y)
+   #   ij=expand.grid(1:n,1:n)
+   #   ij<-ij[ij[,1]<ij[,2],]
+   #   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+   #   i<-ij[,1]
+   #   j<-ij[,2]
+   #   increment=l2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+   #                sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]) )
+   #   sum(increment)/T
+   #}
+   #His_PL[,,i]=hessian(plis, rbis[[1]])
+   
+   His_PL[,,i]=-jacobian(function(theta){with(TwostagePoissonSampleis,
+                                          pairscore_PL(y,cluster,x,theta))}, x=rbis[[1]],method="simple")
    
    #Calculate  variance matrix J  for PL (meat for informative sampling design)
    Jis_PL[, , i]=fast_J_PL(y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,pos=TwostagePoissonSampleis$ID_unit,  
@@ -997,20 +1006,25 @@ for(i in 1:LOTS){
                                        log(truevalue[6])))
    
    #Calculate Hessian matrix H for WPL (bread for uninformative sampling design)
-   wpl=function (theta, y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,x=TwostagePoissonSample$x,
-                 pos=TwostagePoissonSample$ID_unit, sc=TwostagePoissonSample$PSU, fss=pi1, 
-                 n2infor=FirststagePoisson*n2 , N2=length(unique(population$lat)) ){
-      n<-length(y)
-      ij=expand.grid(1:n,1:n)
-      ij<-ij[ij[,1]<ij[,2],]
-      ij<-ij[g[ij[,1]]==g[ij[,2]],]
-      i<-ij[,1]
-      j<-ij[,2]
-      increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                    sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]), pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
-      sum(increment)/T
-   }
-   H_WPL[,,i]=hessian(wpl, rc[[1]])
+   #wpl=function (theta, y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,x=TwostagePoissonSample$x,
+   #              pos=TwostagePoissonSample$ID_unit, sc=TwostagePoissonSample$PSU, fss=pi1, 
+   #              n2infor=FirststagePoisson*n2 , N2=length(unique(population$lat)) ){
+   #   n<-length(y)
+   #   ij=expand.grid(1:n,1:n)
+   #   ij<-ij[ij[,1]<ij[,2],]
+   #   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+   #   i<-ij[,1]
+   #   j<-ij[,2]
+   #   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+   #                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]), tau_12=theta[5], tau2_22=exp(theta[6]), pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
+   #   sum(increment)/T
+   #}
+   #H_WPL[,,i]=hessian(wpl, rc[[1]])
+   H_WPL[,,i]=-jacobian(function(theta){with(TwostagePoissonSample,
+                                            pairscore_WPL(y,cluster,x,theta,ID_unit,PSU, pi1, n2, N2))}, x=rc[[1]],method="simple")
+   
+   
+   
    
    #Calculate  variance matrix J  for WPL (meat for uniformative sampling design)
    J_WPL[, , i]=fast_J_WPL(y=TwostagePoissonSample$y,g=TwostagePoissonSample$cluster,
@@ -1027,20 +1041,24 @@ for(i in 1:LOTS){
    
    #Calculate Hessian matrix H  for WPL (bread for informative sampling design)
    ##informative sampling
-   wplis=function (theta, y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
-                   pos=TwostagePoissonSampleis$ID_unit, sc=TwostagePoissonSampleis$PSU, fss=pi1is, 
-                   n2infor=n2is , N2=length(unique(population$lat)) ){
-      n<-length(y)
-      ij=expand.grid(1:n,1:n)
-      ij<-ij[ij[,1]<ij[,2],]
-      ij<-ij[g[ij[,1]]==g[ij[,2]],]
-      i<-ij[,1]
-      j<-ij[,2]
-      increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
-                    sigma2=exp(theta[3]),tau2_11=exp(theta[4]),  tau_12=theta[5], tau2_22=exp(theta[6]),  pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
-      sum(increment)/T
-   }
-   His_WPL[, , i]=hessian(wplis, rcis[[1]])
+   #wplis=function (theta, y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,x=TwostagePoissonSampleis$x,
+   #                pos=TwostagePoissonSampleis$ID_unit, sc=TwostagePoissonSampleis$PSU, fss=pi1is, 
+   #                n2infor=n2is , N2=length(unique(population$lat)) ){
+   #   n<-length(y)
+   #   ij=expand.grid(1:n,1:n)
+   #   ij<-ij[ij[,1]<ij[,2],]
+   #   ij<-ij[g[ij[,1]]==g[ij[,2]],]
+   #   i<-ij[,1]
+   #   j<-ij[,2]
+   #   increment=wl2(y[i],y[j],g[i],g[j],x[i],x[j], alpha=theta[1],beta=theta[2],
+   #                 sigma2=exp(theta[3]),tau2_11=exp(theta[4]),  tau_12=theta[5], tau2_22=exp(theta[6]),  pos[i], pos[j], sc[i], sc[j], fss,  n2infor,N2)
+   #   sum(increment)/T
+   #}
+   #His_WPL[, , i]=hessian(wplis, rcis[[1]])
+   
+  His_WPL[, , i]=-jacobian(function(theta){with(TwostagePoissonSampleis,
+                                           pairscore_WPL(y,cluster,x,theta,ID_unit,PSU, pi1is, n2is, N2))}, x=rcis[[1]],method="simple")
+   
    
    #Calculate Variance matrix J  for WPL (meat for  informative sampling design)
    Jis_WPL[, , i]=fast_J_WPL(y=TwostagePoissonSampleis$y,g=TwostagePoissonSampleis$cluster,
